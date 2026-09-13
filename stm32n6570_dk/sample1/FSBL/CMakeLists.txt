@@ -47,6 +47,23 @@ add_executable(${CMAKE_PROJECT_NAME})
 # Include mx-generated
 include("mx-generated.cmake")
 
+# LCD (LTDC + RIF)。CubeMX 再生成で mx-generated.cmake / hal_conf.h が
+# 巻き戻っても、ここと -D でモジュールを足し直す。
+target_compile_definitions(stm32cubemx INTERFACE
+    HAL_LTDC_MODULE_ENABLED
+    HAL_RIF_MODULE_ENABLED
+)
+target_sources(STM32_Drivers PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_rif.c
+)
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd/board_lcd.c
+)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd
+)
+
 
 # In order to use CMake for cross-compiling
 set(CMAKE_CXX_COMPILER_FORCED "true")
@@ -95,6 +112,14 @@ include(../../../asp3/asp3_stm32cube.cmake)
 if(NOT DEFINED ASP3_APPLDIR)
     set(ASP3_APPLDIR  ${ASP3_CORE_DIR}/sample)
     set(ASP3_APPLNAME sample1)
+endif()
+
+# sample1 のときだけ LCD コンソール用 cyclic を足す（test_porting 等には載せない）
+if(ASP3_APPLNAME STREQUAL "sample1")
+    list(APPEND ASP3_CFG_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd/board_lcd.cfg)
+    list(APPEND ASP3_APP_INCLUDE_DIRS
+        ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd)
 endif()
 
 set(ASP3_LIBRARY_ONLY ON CACHE BOOL "build asp3 as library only" FORCE)
