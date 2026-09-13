@@ -103,11 +103,12 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
-  sta_ker();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  sta_ker();
   while (1)
   {
     /* USER CODE END WHILE */
