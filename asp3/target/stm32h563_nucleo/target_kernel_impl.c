@@ -48,9 +48,8 @@
 #ifndef TOPPERS_OMIT_TECS
 /*
  *  システムログの低レベル出力のための初期化
- *
  */
-extern void tPutLogSIOPort_initialize(void);
+extern void tPutLogTarget_initialize(void);
 #endif
 
 /*
@@ -68,7 +67,7 @@ target_initialize(void)
 	 *  使用するペリフェラルにクロックを供給
 	 */
 #ifndef TOPPERS_OMIT_TECS
-    tPutLogSIOPort_initialize();
+    tPutLogTarget_initialize();
 #endif /* TOPPERS_OMIT_TECS */
 }
 

@@ -3,12 +3,12 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Advanced Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
- *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2005-2024 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2015 by Ushio Laboratory
+ *              Graduate School of Engineering Science, Osaka Univ., JAPAN
+ *  Copyright (C) 2015 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
- *  上記著作権者は，以下の(1)～(4)の条件を満たす場合に限り，本ソフトウェ
+ *  上記著作権者は，以下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェ
  *  ア（本ソフトウェアを改変したものを含む．以下同じ）を使用・複製・改
  *  変・再配布（以下，利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -37,55 +37,40 @@
  *  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
  *  の責任を負わない．
  * 
+ *  $Id: tCyclicNotifier_inline.h 509 2016-01-12 06:06:14Z ertl-hiro $
  */
 
-/*
- * ターゲット依存モジュール（STM32N6570-DK用）
- */
-#include "kernel_impl.h"
-#include <sil.h>
-
-#ifndef TOPPERS_OMIT_TECS
-/*
- *  システムログの低レベル出力のための初期化
- */
-extern void tPutLogTarget_initialize(void);
-#endif
+#ifndef TOPPERS_TCYCLICHANDLER_INLINE_H
+#define TOPPERS_TCYCLICHANDLER_INLINE_H
 
 /*
- * ターゲット依存部 初期化処理
+ *  周期通知の動作開始
  */
-void
-target_initialize(void)
+Inline ER
+eCyclic_start(CELLIDX idx)
 {
-	/*
-	 * コア依存部の初期化
-	 */
-	core_initialize();
-
-	/*
-	 *  使用するペリフェラルにクロックを供給
-	 */
-#ifndef TOPPERS_OMIT_TECS
-    tPutLogTarget_initialize();
-#endif /* TOPPERS_OMIT_TECS */
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(sta_cyc(ATTR_id));
 }
 
 /*
- * ターゲット依存部 終了処理
+ *  周期通知の動作停止
  */
-void
-target_exit(void)
+Inline ER
+eCyclic_stop(CELLIDX idx)
 {
-    /* チップ依存部の終了処理 */
-    core_terminate();
-    while(1) ;
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(stp_cyc(ATTR_id));
 }
 
 /*
- *  デフォルトのsoftware_term_hook（weak定義）
+ *  周期通知の状態参照
  */
-__attribute__((weak))
-void software_term_hook(void)
+Inline ER
+eCyclic_refer(CELLIDX idx, T_RCYC* pk_cyclicHandlerStatus)
 {
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(ref_cyc(ATTR_id, pk_cyclicHandlerStatus));
 }
+
+#endif /* TOPPERS_TCYCLICHANDLER_INLINE_H */

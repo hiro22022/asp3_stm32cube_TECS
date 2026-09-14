@@ -1,0 +1,54 @@
+/*
+ *		シリアルインタフェースドライバのターゲット依存部
+ */
+
+import_C("target_tecs.h");
+import("tUsart.cdl");
+
+celltype tSIOPortTargetMain {
+	[inline] entry		sSIOPort	eSIOPort;
+	[optional] call		siSIOCBR	ciSIOCBR;
+
+	call			sSIOPort	cSIOPort;
+	[inline] entry	siSIOCBR	eiSIOCBR;
+
+	call	sInterruptRequest	cInterruptRequest;
+};
+
+[active]
+composite tSIOPortTarget {
+	entry				sSIOPort	eSIOPort;
+	[optional] call		siSIOCBR	ciSIOCBR;
+
+	attr {
+		uintptr_t	baseAddress;
+		INTNO		interruptNumber;
+		PRI			isrPriority = 1;
+		PRI			interruptPriority = -2;
+		uint32_t	bps = C_EXP("BPS_SETTING");
+	};
+
+	cell tUsart Usart {
+		baseAddress = composite.baseAddress;
+		bps         = composite.bps;
+		ciSIOCBR    = SIOPortMain.eiSIOCBR;
+	};
+
+	cell tSIOPortTargetMain SIOPortMain {
+		ciSIOCBR          => composite.ciSIOCBR;
+		cSIOPort          = Usart.eSIOPort;
+		cInterruptRequest = InterruptRequest.eInterruptRequest;
+	};
+	composite.eSIOPort => SIOPortMain.eSIOPort;
+
+	cell tISR ISRInstance {
+		interruptNumber = composite.interruptNumber;
+		isrPriority     = composite.isrPriority;
+		ciISRBody       = Usart.eiISR;
+	};
+	cell tInterruptRequest InterruptRequest {
+		interruptNumber   = composite.interruptNumber;
+		interruptPriority = composite.interruptPriority;
+		attribute         = C_EXP("TA_ENAINT");
+	};
+};

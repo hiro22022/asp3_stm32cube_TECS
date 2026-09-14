@@ -1,0 +1,21 @@
+/*
+ *  ターゲット依存セルの組上げ（STM32N6570-DK）
+ */
+
+const size_t DefaultTaskStackSize = 4096;
+const size_t LogTaskStackSize = DefaultTaskStackSize;
+
+const char *const BannerTargetName = "STM32N6570-DK (ARM Cortex-M55)";
+const char *const BannerCopyrightNotice = "";
+
+import("tPutLogTarget.cdl");
+import("tSIOPortTarget.cdl");
+
+cell tSIOPortTarget SIOPortTarget1 {
+	baseAddress     = C_EXP("USART_BASE");
+	interruptNumber = C_EXP("USART_INTNO");
+};
+
+cell tPutLogTarget PutLogTarget {
+	cSIOPort = SIOPortTarget1.eSIOPort;
+};

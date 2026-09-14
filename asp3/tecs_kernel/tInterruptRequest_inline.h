@@ -3,12 +3,12 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Advanced Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
- *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2005-2024 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2015 by Ushio Laboratory
+ *              Graduate School of Engineering Science, Osaka Univ., JAPAN
+ *  Copyright (C) 2015-2017 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
- *  上記著作権者は，以下の(1)～(4)の条件を満たす場合に限り，本ソフトウェ
+ *  上記著作権者は，以下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェ
  *  ア（本ソフトウェアを改変したものを含む．以下同じ）を使用・複製・改
  *  変・再配布（以下，利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -36,56 +36,61 @@
  *  に対する適合性も含めて，いかなる保証も行わない．また，本ソフトウェ
  *  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
  *  の責任を負わない．
- * 
+ *
+ *  $Id: tInterruptRequest_inline.h 788 2017-04-01 07:25:17Z ertl-hiro $  
  */
 
-/*
- * ターゲット依存モジュール（STM32N6570-DK用）
- */
-#include "kernel_impl.h"
-#include <sil.h>
-
-#ifndef TOPPERS_OMIT_TECS
-/*
- *  システムログの低レベル出力のための初期化
- */
-extern void tPutLogTarget_initialize(void);
-#endif
+#ifndef TOPPERS_TINTERRUPTREQUEST_INLINE_H
+#define TOPPERS_TINTERRUPTREQUEST_INLINE_H
 
 /*
- * ターゲット依存部 初期化処理
+ *  割込みの禁止
  */
-void
-target_initialize(void)
+Inline ER
+eInterruptRequest_disable(CELLIDX idx)
 {
-	/*
-	 * コア依存部の初期化
-	 */
-	core_initialize();
-
-	/*
-	 *  使用するペリフェラルにクロックを供給
-	 */
-#ifndef TOPPERS_OMIT_TECS
-    tPutLogTarget_initialize();
-#endif /* TOPPERS_OMIT_TECS */
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(dis_int(ATTR_interruptNumber));
 }
 
 /*
- * ターゲット依存部 終了処理
+ *  割込みの許可
  */
-void
-target_exit(void)
+Inline ER
+eInterruptRequest_enable(CELLIDX idx)
 {
-    /* チップ依存部の終了処理 */
-    core_terminate();
-    while(1) ;
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(ena_int(ATTR_interruptNumber));
 }
 
 /*
- *  デフォルトのsoftware_term_hook（weak定義）
+ *  割込み要求のクリア
  */
-__attribute__((weak))
-void software_term_hook(void)
+Inline ER
+eInterruptRequest_clear(CELLIDX idx)
 {
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(clr_int(ATTR_interruptNumber));
 }
+
+/*
+ *  割込みの要求
+ */
+Inline ER
+eInterruptRequest_raise(CELLIDX idx)
+{
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(ras_int(ATTR_interruptNumber));
+}
+
+/*
+ *  割込み要求のチェック
+ */
+Inline ER_BOOL
+eInterruptRequest_probe(CELLIDX idx)
+{
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(prb_int(ATTR_interruptNumber));
+}
+
+#endif /* TOPPERS_TINTERRUPTREQUEST_INLINE_H */

@@ -5,10 +5,10 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2005-2024 by Embedded and Real-Time Systems Laboratory
- *              Graduate School of Information Science, Nagoya Univ., JAPAN
+ *  Copyright (C) 2004-2026 by Embedded and Real-Time Systems Laboratory
+ *                  Graduate School of Informatics, Nagoya Univ., JAPAN
  * 
- *  上記著作権者は，以下の(1)～(4)の条件を満たす場合に限り，本ソフトウェ
+ *  上記著作権者は，以下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェ
  *  ア（本ソフトウェアを改変したものを含む．以下同じ）を使用・複製・改
  *  変・再配布（以下，利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -37,55 +37,38 @@
  *  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
  *  の責任を負わない．
  * 
+ *  $Id: tBannerMain.c 1877 2026-05-07 01:39:42Z ertl-hiro $
  */
 
 /*
- * ターゲット依存モジュール（STM32N6570-DK用）
+ *		カーネル起動メッセージ出力の本体
  */
-#include "kernel_impl.h"
-#include <sil.h>
 
-#ifndef TOPPERS_OMIT_TECS
-/*
- *  システムログの低レベル出力のための初期化
- */
-extern void tPutLogTarget_initialize(void);
-#endif
+#include "tBannerMain_tecsgen.h"
+#include <t_syslog.h>
 
 /*
- * ターゲット依存部 初期化処理
+ *  カーネル起動メッセージ
+ */
+static const char banner[] = "\n"
+"TOPPERS/ASP3 Kernel Release %d.%X.%d for %s"
+" (" __DATE__ ", " __TIME__ ")\n"
+"Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory\n"
+"                            Toyohashi Univ. of Technology, JAPAN\n"
+"Copyright (C) 2004-2026 by Embedded and Real-Time Systems Laboratory\n"
+"                Graduate School of Informatics, Nagoya Univ., JAPAN\n"
+"%s";
+
+/*
+ *  カーネル起動メッセージの出力（受け口関数）
  */
 void
-target_initialize(void)
+eBannerInitialize_main(void)
 {
-	/*
-	 * コア依存部の初期化
-	 */
-	core_initialize();
-
-	/*
-	 *  使用するペリフェラルにクロックを供給
-	 */
-#ifndef TOPPERS_OMIT_TECS
-    tPutLogTarget_initialize();
-#endif /* TOPPERS_OMIT_TECS */
-}
-
-/*
- * ターゲット依存部 終了処理
- */
-void
-target_exit(void)
-{
-    /* チップ依存部の終了処理 */
-    core_terminate();
-    while(1) ;
-}
-
-/*
- *  デフォルトのsoftware_term_hook（weak定義）
- */
-__attribute__((weak))
-void software_term_hook(void)
-{
+	syslog_5(LOG_NOTICE, banner,
+				(TKERNEL_PRVER >> 12) & 0x0fU,
+				(TKERNEL_PRVER >> 4) & 0xffU,
+				TKERNEL_PRVER & 0x0fU,
+				ATTR_targetName,
+				ATTR_copyrightNotice);
 }

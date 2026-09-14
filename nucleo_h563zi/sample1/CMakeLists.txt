@@ -49,11 +49,26 @@ set(ASP3_TARGET stm32h563_nucleo)
 # STM32 協調ヘルパ（ASP3_TARGET_DIR / ASP3_CORE_DIR / ASP3_ROOT_DIR を解決）
 include(../../asp3/asp3_stm32cube.cmake)
 
+# TECS ビルド（既定 OFF＝現行の非 TECS）。ON 時は configure で tecsgen を実行する。
+option(ASP3_ENABLE_TECS "Build with TECS generator (tecsgen + CDL)" OFF)
+if(ASP3_ENABLE_TECS)
+    set(ASP3_OMIT_TECS OFF CACHE BOOL "Use plain-C syssvc (skip tecsgen)" FORCE)
+endif()
+
 # アプリ（タスク定義）は asp3_core 同梱 sample（自作アプリに差し替え可）
 # -D ASP3_APPLDIR/ASP3_APPLNAME 指定時はそれを尊重する（test_porting 等の差し替え用）
 if(NOT DEFINED ASP3_APPLDIR)
     set(ASP3_APPLDIR  ${ASP3_CORE_DIR}/sample)
     set(ASP3_APPLNAME sample1)
+endif()
+
+if(ASP3_ENABLE_TECS)
+    include(${ASP3_STM32_DIR}/cmake/Asp3Tecs.cmake)
+    asp3_tecs_setup_paths()
+    if(NOT DEFINED ASP3_APPL_CDL)
+        set(ASP3_APPL_CDL ${ASP3_STM32_DIR}/sample/sample1.cdl)
+    endif()
+    asp3_tecs_configure("${ASP3_APPL_CDL}" "${CMAKE_BINARY_DIR}/generated")
 endif()
 
 # asp3 カーネルライブラリをライブラリ専用モードでビルド
@@ -91,7 +106,13 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 )
 
 # システムサービス（banner / syslog / serial / logtask 等）を追加
-asp3_add_syssvc(${CMAKE_PROJECT_NAME})
+if(ASP3_ENABLE_TECS)
+    asp3_tecs_clear_omit_tecs()
+    asp3_tecs_apply_manifest(${CMAKE_PROJECT_NAME})
+    asp3_tecs_add_support_sources(${CMAKE_PROJECT_NAME})
+else()
+    asp3_add_syssvc(${CMAKE_PROJECT_NAME})
+endif()
 
 # TOPPERS/ASP3 を使うための STM32 の設定（現状なし）
 asp3_set_stm32_options(${CMAKE_PROJECT_NAME})

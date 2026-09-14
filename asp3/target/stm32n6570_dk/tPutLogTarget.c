@@ -5,10 +5,10 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2005-2024 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2005-2016 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
- *  上記著作権者は，以下の(1)～(4)の条件を満たす場合に限り，本ソフトウェ
+ *  上記著作権者は，以下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェ
  *  ア（本ソフトウェアを改変したものを含む．以下同じ）を使用・複製・改
  *  変・再配布（以下，利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -37,55 +37,38 @@
  *  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
  *  の責任を負わない．
  * 
+ *  @(#) $Id: tPutLogTarget.c 648 2016-02-20 00:50:56Z ertl-honda $
  */
 
 /*
- * ターゲット依存モジュール（STM32N6570-DK用）
+ *		システムログの低レベル出力
  */
-#include "kernel_impl.h"
-#include <sil.h>
 
-#ifndef TOPPERS_OMIT_TECS
+#include "tPutLogTarget_tecsgen.h"
+
 /*
  *  システムログの低レベル出力のための初期化
- */
-extern void tPutLogTarget_initialize(void);
-#endif
-
-/*
- * ターゲット依存部 初期化処理
+ *
+ *  初期化ルーチンを呼び出すより前に初期化するために，カーネルのターゲッ
+ *  ト依存部から直接呼び出すための関数．
  */
 void
-target_initialize(void)
+tPutLogTarget_initialize(void)
 {
-	/*
-	 * コア依存部の初期化
-	 */
-	core_initialize();
-
-	/*
-	 *  使用するペリフェラルにクロックを供給
-	 */
-#ifndef TOPPERS_OMIT_TECS
-    tPutLogTarget_initialize();
-#endif /* TOPPERS_OMIT_TECS */
+	cSIOPort_open();
 }
 
+
 /*
- * ターゲット依存部 終了処理
+ *  システムログの低レベル出力のための文字出力（受け口関数）
+ *
+ *  SIOポートに文字が送信できるまでポーリングする．
  */
 void
-target_exit(void)
+ePutLog_putChar(char c)
 {
-    /* チップ依存部の終了処理 */
-    core_terminate();
-    while(1) ;
-}
-
-/*
- *  デフォルトのsoftware_term_hook（weak定義）
- */
-__attribute__((weak))
-void software_term_hook(void)
-{
+	if(c == '\n'){
+		while(!cSIOPort_putChar('\r'));
+	}
+	while(!cSIOPort_putChar(c));
 }

@@ -1,3 +1,52 @@
+# 共通の自動生成物（CMake インソース実行・Python・成果物のコピー）
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+cmake_install.cmake
+compile_commands.json
+__pycache__/
+*.pyc
+.venv/
+*.elf
+*.bin
+*.hex
+*.map
+*.tap
+
+# TECS ジェネレータ／cfg 生成物
+# CMake 経路では build/*/generated/ に出る（各ボードの build/ で除外済み）。
+# 手実行や -g 未指定時（既定 gen/）の漏れ防止。
+gen/
+**/CMakeLists.tecsgen.cmake
+**/Makefile.tecsgen
+**/Makefile.templ
+**/Makefile.depend
+tecsgen.cfg
+tecsgen.rbdmp
+tecsgen.timestamp
+global_tecsgen.h
+*_tecsgen.c
+*_tecsgen.h
+*_factory.h
+*_templ.c
+*_inline_templ.h
+tmp_plugin_generate.h
+tmp_plugin_post_code.cdl
+tmp_C_src.c
+tmp_*.cdl
+tmp_*.h
+kernel_cfg.c
+kernel_cfg.h
+kernel_cfg.timestamp
+offset.h
+offset.timestamp
+cfg1_out.c
+cfg1_out.db
+cfg1_out.syms
+cfg1_out.srec
+cfg1_out.timestamp
+cfg2_out.db
+
 nucleo_h563zi/sample1/build/
 nucleo_h563zi/sample1/cmake/
 nucleo_h563zi/sample1/Core/Inc/*
@@ -56,7 +105,9 @@ stm32n6570_dk/sample1/.mxproject
 stm32n6570_dk/sample1/CMakeLists.txt
 stm32n6570_dk/sample1/CMakePresets.json
 stm32n6570_dk/sample1/gcc-arm-none-eabi.cmake
+stm32n6570_dk/sample1/starm-clang.cmake
 stm32n6570_dk/sample1/mx-generated.cmake
+stm32n6570_dk/sample1/Makefile
 stm32n6570_dk/sample1/FSBL/build/
 stm32n6570_dk/sample1/FSBL/Inc/*
 !stm32n6570_dk/sample1/FSBL/Inc/main.h
@@ -64,6 +115,8 @@ stm32n6570_dk/sample1/FSBL/Src/*
 !stm32n6570_dk/sample1/FSBL/Src/main.c
 !stm32n6570_dk/sample1/FSBL/Src/stm32n6xx_it.c
 stm32n6570_dk/sample1/FSBL/Startup/
+stm32n6570_dk/sample1/FSBL/src/
+stm32n6570_dk/sample1/FSBL/tmp/
 stm32n6570_dk/sample1/FSBL/mx-generated.cmake
 stm32n6570_dk/sample1/FSBL/CMakePresets.json
 stm32n6570_dk/sample1/FSBL/STM32N657XX_AXISRAM2_fsbl.ld

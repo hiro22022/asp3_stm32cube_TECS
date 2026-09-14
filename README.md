@@ -1,4 +1,16 @@
+# TOPPERS/ASP3 Core の TECS 対応
+
+## 概要
+
+TOPPERS/ASP3 COre の STM32 CubeMX 向け環境 をベースに TECS 対応する。
+
+TODO は、次のとおり。
+
+ * TECS ジェネレータ生成物の CMake 対応（H563ZI / STM32N6570-DK。手順は [docs/tecs-cmake.md](docs/tecs-cmake.md)）
+ * Serial / Syslog の TECS 化（H563ZI と STM32N6570-DK の tUsart / tSIOPortTarget / tSysLog で sample1 経路は実装済み。H533 / C562 へ横展開）
+
 # TOPPERS/ASP3 Core の STM32 CubeMX 向け環境
+
 
 [TOPPERS/ASP3 Core](https://github.com/toppers/asp3_core)（TECSレス・Python cfg 版 ASP3）を、
 STM32CubeMX が生成する HAL プロジェクトと協調動作させる環境です。
@@ -81,6 +93,10 @@ FW パッケージ未導入の場合はダウンロード確認が出るので�
 cd nucleo_h563zi/sample1  # または nucleo_h533re/sample1
 cmake --preset Debug
 cmake --build build/Debug # → build/Debug/H563ZI.elf
+
+# TECS 有効（Ruby / tecsgen が必要。N6570-DK は stm32n6570_dk/sample1/FSBL）
+cmake --preset Debug -DASP3_ENABLE_TECS=ON
+cmake --build build/Debug
 ```
 
 ### 2-b. Visual Studio Code の CMake 拡張機能でビルド
@@ -301,7 +317,9 @@ asp3_set_stm32_options(${CMAKE_PROJECT_NAME})
 
 ## 制限事項
 
-- TECS には対応していません（asp3_core は TECS レス方針）。
+- TECS: NUCLEO-H563ZI と STM32N6570-DK で CMake 経路を実装（`-DASP3_ENABLE_TECS=ON`）。
+  asp3_core は TECS レスのまま。詳細は [docs/tecs-cmake.md](docs/tecs-cmake.md)。
+  H533 / C562 への横展開は未了。
 - TrustZone：**H5 / C5 は TZEN 無効（非 Secure 実行）前提**です。
   一方 **STM32N6570-DK は Secure 実行**で動かしており（`TOPPERS_ENABLE_TRUSTZONE` を定義）、
   Secure / NonSecure に分割する構成は未対応です。

@@ -3,12 +3,12 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Advanced Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
- *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2005-2024 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2015 by Ushio Laboratory
+ *              Graduate School of Engineering Science, Osaka Univ., JAPAN
+ *  Copyright (C) 2015 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
- *  上記著作権者は，以下の(1)～(4)の条件を満たす場合に限り，本ソフトウェ
+ *  上記著作権者は，以下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェ
  *  ア（本ソフトウェアを改変したものを含む．以下同じ）を使用・複製・改
  *  変・再配布（以下，利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -37,55 +37,70 @@
  *  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
  *  の責任を負わない．
  * 
+ *  $Id: tFixedSizeMemoryPool_inline.h 828 2017-10-15 13:18:07Z ertl-hiro $
  */
 
-/*
- * ターゲット依存モジュール（STM32N6570-DK用）
- */
-#include "kernel_impl.h"
-#include <sil.h>
-
-#ifndef TOPPERS_OMIT_TECS
-/*
- *  システムログの低レベル出力のための初期化
- */
-extern void tPutLogTarget_initialize(void);
-#endif
+#ifndef TOPPERS_TFIXEDSIZEMEMORYPOOL_INLINE_H
+#define TOPPERS_TFIXEDSIZEMEMORYPOOL_INLINE_H
 
 /*
- * ターゲット依存部 初期化処理
+ *  固定長メモリブロックの獲得
  */
-void
-target_initialize(void)
+Inline ER
+eFixedSizeMemoryPool_get(CELLIDX idx, void **p_block)
 {
-	/*
-	 * コア依存部の初期化
-	 */
-	core_initialize();
-
-	/*
-	 *  使用するペリフェラルにクロックを供給
-	 */
-#ifndef TOPPERS_OMIT_TECS
-    tPutLogTarget_initialize();
-#endif /* TOPPERS_OMIT_TECS */
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(get_mpf(ATTR_id, p_block));
 }
 
 /*
- * ターゲット依存部 終了処理
+ *  固定長メモリブロックの獲得（ポーリング）
  */
-void
-target_exit(void)
+Inline ER
+eFixedSizeMemoryPool_getPolling(CELLIDX idx, void **p_block)
 {
-    /* チップ依存部の終了処理 */
-    core_terminate();
-    while(1) ;
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(pget_mpf(ATTR_id, p_block));
 }
 
 /*
- *  デフォルトのsoftware_term_hook（weak定義）
+ *  固定長メモリブロックの獲得（タイムアウトあり）
  */
-__attribute__((weak))
-void software_term_hook(void)
+Inline ER
+eFixedSizeMemoryPool_getTimeout(CELLIDX idx, void **p_block, TMO timeout)
 {
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(tget_mpf(ATTR_id, p_block, timeout));
 }
+
+/*
+ *  固定長メモリブロックの返却
+ */
+Inline ER
+eFixedSizeMemoryPool_release(CELLIDX idx, const void *block)
+{
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(rel_mpf(ATTR_id, (void *) block));
+}
+
+/*
+ *  固定長メモリプールの再初期化
+ */
+Inline ER
+eFixedSizeMemoryPool_initialize(CELLIDX idx)
+{
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(ini_mpf(ATTR_id));
+}
+
+/*
+ *  固定長メモリプールの状態参照
+ */
+Inline ER
+eFixedSizeMemoryPool_refer(CELLIDX idx, T_RMPF *pk_fixedSizeMemoryPoolStatus)
+{
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	return(ref_mpf(ATTR_id, pk_memoryPoolFixedSizeStatus));
+}
+
+#endif /* TOPPERS_TFIXEDSIZEMEMORYPOOL_INLINE_H */

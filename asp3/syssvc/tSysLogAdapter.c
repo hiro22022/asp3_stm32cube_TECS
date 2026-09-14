@@ -1,14 +1,11 @@
 /*
- *  TOPPERS/ASP Kernel
- *      Toyohashi Open Platform for Embedded Real-Time Systems/
- *      Advanced Standard Profile Kernel
+ *  TOPPERS Software
+ *      Toyohashi Open Platform for Embedded Real-Time Systems
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
- *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2005-2024 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2015,2016 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
- *  上記著作権者は，以下の(1)～(4)の条件を満たす場合に限り，本ソフトウェ
+ *  上記著作権者は，以下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェ
  *  ア（本ソフトウェアを改変したものを含む．以下同じ）を使用・複製・改
  *  変・再配布（以下，利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -37,55 +34,58 @@
  *  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
  *  の責任を負わない．
  * 
+ *  $Id: tSysLogAdapter.c 837 2017-10-17 00:34:30Z ertl-hiro $
  */
 
 /*
- * ターゲット依存モジュール（STM32N6570-DK用）
+ *		C言語で記述されたアプリケーションから，TECSベースのシステムログ
+ *		機能を呼び出すためのアダプタ
  */
-#include "kernel_impl.h"
-#include <sil.h>
 
-#ifndef TOPPERS_OMIT_TECS
-/*
- *  システムログの低レベル出力のための初期化
- */
-extern void tPutLogTarget_initialize(void);
-#endif
+#include "tSysLogAdapter_tecsgen.h"
+#include "syslog.h"
 
 /*
- * ターゲット依存部 初期化処理
+ *  ログ情報の出力
  */
-void
-target_initialize(void)
+ER
+syslog_wri_log(uint_t prio, const SYSLOG *p_syslog)
 {
-	/*
-	 * コア依存部の初期化
-	 */
-	core_initialize();
-
-	/*
-	 *  使用するペリフェラルにクロックを供給
-	 */
-#ifndef TOPPERS_OMIT_TECS
-    tPutLogTarget_initialize();
-#endif /* TOPPERS_OMIT_TECS */
+	return(cSysLog_write(prio, p_syslog));
 }
 
 /*
- * ターゲット依存部 終了処理
+ *  ログバッファからのログ情報の読出し
  */
-void
-target_exit(void)
+ER_UINT
+syslog_rea_log(SYSLOG *p_syslog)
 {
-    /* チップ依存部の終了処理 */
-    core_terminate();
-    while(1) ;
+	return(cSysLog_read(p_syslog));
 }
 
 /*
- *  デフォルトのsoftware_term_hook（weak定義）
+ *  出力すべきログ情報の重要度の設定
  */
-__attribute__((weak))
-void software_term_hook(void)
+ER
+syslog_msk_log(uint_t logmask, uint_t lowmask)
 {
+	return(cSysLog_mask(logmask, lowmask));
+}
+
+/*
+ *  ログバッファの状態参照
+ */
+ER
+syslog_ref_log(T_SYSLOG_RLOG *pk_rlog)
+{
+	return(cSysLog_refer(pk_rlog));
+}
+
+/*
+ *  低レベル出力によるすべてのログ情報の出力
+ */
+ER
+syslog_fls_log(void)
+{
+	return(cSysLog_flush());
 }

@@ -35,3 +35,66 @@ function(asp3_set_stm32_options TARGET)
     #  pico-sdk の irq_* --wrap に相当する割込み奪取は，CubeMX の startup が
     #  ベクタを握り main() が sta_ker() を呼ぶ構成では不要．
 endfunction()
+
+#
+#  TECS 用パス（外側リポジトリ側。asp3_core は触らない）
+#
+get_filename_component(ASP3_TECSGEN_DIR ${ASP3_STM32_DIR}/../tecsgen ABSOLUTE)
+set(ASP3_TECS_KERNEL_DIR ${ASP3_STM32_DIR}/tecs_kernel)
+set(ASP3_SRCDIR ${ASP3_STM32_DIR})
+
+#  tecsgen の -I / import_C 用。CubeMX 生成ヘッダはターゲットで分岐する。
+function(asp3_tecs_setup_paths)
+    set(_tecs_inc
+        ${ASP3_TECS_KERNEL_DIR}
+        ${ASP3_STM32_DIR}
+        ${ASP3_STM32_DIR}/syssvc
+        ${ASP3_TARGET_DIR}
+        ${ASP3_CORE_DIR}
+        ${ASP3_CORE_DIR}/include
+        ${ASP3_CORE_DIR}/syssvc
+        ${ASP3_CORE_DIR}/arch/arm_m_gcc/common
+        ${ASP3_CORE_DIR}/arch/gcc
+    )
+    set(_tecs_defs
+        TECSGEN
+        USE_HAL_DRIVER
+        USE_FULL_LL_DRIVER
+    )
+
+    if(ASP3_TARGET STREQUAL "stm32n6570_dk")
+        set(_tecs_chipdir ${ASP3_STM32_DIR}/arch/arm_m_gcc/stm32n6xx_stm32cube)
+        list(APPEND _tecs_inc
+            ${_tecs_chipdir}
+            ${CMAKE_SOURCE_DIR}/Inc
+            ${CMAKE_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Inc
+            ${CMAKE_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Inc/Legacy
+            ${CMAKE_SOURCE_DIR}/../Drivers/CMSIS/Device/ST/STM32N6xx/Include
+            ${CMAKE_SOURCE_DIR}/../Drivers/CMSIS/Include
+        )
+        list(APPEND _tecs_defs STM32N657xx)
+    else()
+        set(_tecs_chipdir ${ASP3_STM32_DIR}/arch/arm_m_gcc/stm32h5xx_stm32cube)
+        list(APPEND _tecs_inc
+            ${_tecs_chipdir}
+            ${CMAKE_SOURCE_DIR}/Core/Inc
+            ${CMAKE_SOURCE_DIR}/Drivers/STM32H5xx_HAL_Driver/Inc
+            ${CMAKE_SOURCE_DIR}/Drivers/STM32H5xx_HAL_Driver/Inc/Legacy
+            ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Device/ST/STM32H5xx/Include
+            ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Include
+        )
+        list(APPEND _tecs_defs STM32H563xx)
+    endif()
+
+    set(ASP3_TECS_CHIPDIR ${_tecs_chipdir} PARENT_SCOPE)
+    set(ASP3_TECS_INCLUDE_DIRS ${_tecs_inc} PARENT_SCOPE)
+    set(ASP3_TECS_COMPILE_DEFINITIONS ${_tecs_defs} PARENT_SCOPE)
+
+    #  cfg / カーネルが tecs_kernel と生成ヘッダを見えるようにする
+    list(APPEND ASP3_INCLUDE_DIRS
+        ${ASP3_TECS_KERNEL_DIR}
+        ${ASP3_STM32_DIR}/syssvc
+        ${CMAKE_BINARY_DIR}/generated
+    )
+    set(ASP3_INCLUDE_DIRS ${ASP3_INCLUDE_DIRS} PARENT_SCOPE)
+endfunction()

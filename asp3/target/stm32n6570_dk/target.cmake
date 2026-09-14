@@ -119,13 +119,18 @@ list(APPEND ASP3_LINK_OPTIONS
 list(APPEND ASP3_LINK_LIBS c gcc)
 
 #
-#  ターゲット依存部のソース（いずれも非TECS版）
+#  ターゲット依存部のソース
+#  TECS 時は target_serial.c の代わりに tUsart セルを使う。
 #
 list(APPEND ASP3_TARGET_C_FILES
     ${TARGETDIR}/target_kernel_impl.c
     ${TARGETDIR}/target_timer.c
-    ${TARGETDIR}/target_serial.c
 )
+if(NOT ASP3_ENABLE_TECS)
+    list(APPEND ASP3_TARGET_C_FILES
+        ${TARGETDIR}/target_serial.c
+    )
+endif()
 
 #
 #  アーキ依存部（チップ層）のインクルード

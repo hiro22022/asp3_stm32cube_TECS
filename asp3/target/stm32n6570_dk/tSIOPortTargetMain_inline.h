@@ -5,10 +5,10 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2005-2024 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2005-2015 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
- *  上記著作権者は，以下の(1)～(4)の条件を満たす場合に限り，本ソフトウェ
+ *  上記著作権者は，以下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェ
  *  ア（本ソフトウェアを改変したものを含む．以下同じ）を使用・複製・改
  *  変・再配布（以下，利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -37,55 +37,119 @@
  *  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
  *  の責任を負わない．
  * 
+ *  $Id: tSIOPortTargetMain_inline.h 648 2016-02-20 00:50:56Z ertl-honda $
  */
 
 /*
- * ターゲット依存モジュール（STM32N6570-DK用）
+ *		シリアルインタフェースドライバのターゲット依存部
  */
-#include "kernel_impl.h"
-#include <sil.h>
-
-#ifndef TOPPERS_OMIT_TECS
-/*
- *  システムログの低レベル出力のための初期化
- */
-extern void tPutLogTarget_initialize(void);
-#endif
 
 /*
- * ターゲット依存部 初期化処理
+ *  SIOポートのオープン
  */
-void
-target_initialize(void)
+Inline void
+eSIOPort_open(CELLIDX idx)
 {
-	/*
-	 * コア依存部の初期化
-	 */
-	core_initialize();
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
 
 	/*
-	 *  使用するペリフェラルにクロックを供給
+	 *  デバイス依存のオープン処理
 	 */
-#ifndef TOPPERS_OMIT_TECS
-    tPutLogTarget_initialize();
-#endif /* TOPPERS_OMIT_TECS */
+	cSIOPort_open();
+
+	/*
+	 *  NVIC 割込み許可は eSIOPort_enableCBR 側へ遅延する。
+	 *  ここで enable すると sta_ker の initialize_interrupt 前に
+	 *  USART 割込みが入り default_int_handler → target_exit になる。
+	 */
 }
 
 /*
- * ターゲット依存部 終了処理
+ *  SIOポートのクローズ
  */
-void
-target_exit(void)
+Inline void
+eSIOPort_close(CELLIDX idx)
 {
-    /* チップ依存部の終了処理 */
-    core_terminate();
-    while(1) ;
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+
+	/*
+	 *  デバイス依存のクローズ処理
+	 */
+	cSIOPort_close();
+
+	/*
+	 *  SIOの割込みをマスクする．
+	 */
+	cInterruptRequest_disable();
 }
 
 /*
- *  デフォルトのsoftware_term_hook（weak定義）
+ *  SIOポートへの文字送信
  */
-__attribute__((weak))
-void software_term_hook(void)
+Inline bool_t
+eSIOPort_putChar(CELLIDX idx, char c)
 {
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+
+	return(cSIOPort_putChar(c));
+}
+
+/*
+ *  SIOポートからの文字受信
+ */
+Inline int_t
+eSIOPort_getChar(CELLIDX idx)
+{
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+
+	return(cSIOPort_getChar());
+}
+
+/*
+ *  SIOポートからのコールバックの許可
+ */
+Inline void
+eSIOPort_enableCBR(CELLIDX idx, uint_t cbrtn)
+{
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+
+	cInterruptRequest_enable();
+	cSIOPort_enableCBR(cbrtn);
+}
+
+/*
+ *  SIOポートからのコールバックの禁止
+ */
+Inline void
+eSIOPort_disableCBR(CELLIDX idx, uint_t cbrtn)
+{
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+
+	cSIOPort_disableCBR(cbrtn);
+}
+
+/*
+ *  SIOポートからの送信可能コールバック
+ */
+Inline void
+eiSIOCBR_readySend(CELLIDX idx)
+{
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+
+	if (is_ciSIOCBR_joined()) {
+		ciSIOCBR_readySend();
+	}
+}
+
+/*
+ *  SIOポートからの受信通知コールバック
+ */
+Inline void
+eiSIOCBR_readyReceive(CELLIDX idx)
+{
+	CELLCB	*p_cellcb = GET_CELLCB(idx);
+	
+	if (is_ciSIOCBR_joined()) {
+		ciSIOCBR_readyReceive();
+	}
 }
