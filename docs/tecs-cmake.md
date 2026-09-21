@@ -32,7 +32,7 @@ ruby --version    # 2.7 以降を想定
 
 ## ビルド（STM32N6570-DK）
 
-非 TECS（現行どおり）:
+TECS（既定）:
 
 ```bash
 cd stm32n6570_dk/sample1/FSBL
@@ -40,11 +40,11 @@ cmake --preset Debug
 cmake --build build/Debug
 ```
 
-TECS:
+非 TECS に戻す場合:
 
 ```bash
 cd stm32n6570_dk/sample1/FSBL
-cmake --preset Debug -DASP3_ENABLE_TECS=ON
+cmake --preset Debug -DASP3_ENABLE_TECS=OFF
 cmake --build build/Debug
 ```
 
@@ -52,7 +52,7 @@ cmake --build build/Debug
 
 ## ビルド（NUCLEO-H563ZI）
 
-非 TECS（現行どおり）:
+TECS（既定）:
 
 ```bash
 cd nucleo_h563zi/sample1
@@ -60,11 +60,11 @@ cmake --preset Debug
 cmake --build build/Debug
 ```
 
-TECS:
+非 TECS に戻す場合:
 
 ```bash
 cd nucleo_h563zi/sample1
-cmake --preset Debug -DASP3_ENABLE_TECS=ON
+cmake --preset Debug -DASP3_ENABLE_TECS=OFF
 cmake --build build/Debug
 ```
 
@@ -88,6 +88,6 @@ TECS 時は `initialize_tecs()` が必要になる。
 | 項目 | 結果 |
 |---|---|
 | tecsgen → `CMakeLists.tecsgen.cmake` / `tecsgen.cfg` | STM32N6570-DK の configure でマニフェストと `tecsgen.cfg` を生成 |
-| `ASP3_ENABLE_TECS=OFF`（STM32N6570-DK） | `N6570DK_FSBL.elf` リンク成功（既存の非 TECS 経路） |
-| `ASP3_ENABLE_TECS=ON`（STM32N6570-DK） | `N6570DK_FSBL.elf` リンク成功。`initialize_tecs` / `tUsart` / `syslog_wri_log` / `serial_opn_por` を確認。実機シリアルは未実施 |
+| `ASP3_ENABLE_TECS=ON`（STM32N6570-DK・既定） | `N6570DK_FSBL.elf` リンク成功。`initialize_tecs` / `tUsart` / `syslog_wri_log` / `serial_opn_por` を確認。実機シリアルは未実施 |
+| `ASP3_ENABLE_TECS=OFF`（STM32N6570-DK） | `N6570DK_FSBL.elf` リンク成功（非 TECS 経路） |
 | NUCLEO-H563ZI の ELF / 実機 | このワークスペースには H5 の CubeMX 生成物が無いため未実施 |

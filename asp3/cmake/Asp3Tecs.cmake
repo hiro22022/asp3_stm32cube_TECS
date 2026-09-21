@@ -39,12 +39,20 @@ function(asp3_tecs_run_generator)
     if(NOT EXISTS "${TECS_CDL_FILE}")
         message(FATAL_ERROR "asp3_tecs_run_generator: CDL not found: ${TECS_CDL_FILE}")
     endif()
-    if(NOT EXISTS "${ASP3_TECSGEN_DIR}/tecsgen.rb")
+    #  tecsgen.rb / tecsgen.py のどちらか存在する方を使う（同一ディレクトリ想定）。
+    #  両方ある場合は .rb を優先（従来互換）。
+    if(EXISTS "${ASP3_TECSGEN_DIR}/tecsgen.rb")
+        set(_tecsgen_script "${ASP3_TECSGEN_DIR}/tecsgen.rb")
+        find_program(RUBY_EXECUTABLE ruby REQUIRED)
+        set(_tecsgen_interpreter "${RUBY_EXECUTABLE}")
+    elseif(EXISTS "${ASP3_TECSGEN_DIR}/tecsgen.py")
+        set(_tecsgen_script "${ASP3_TECSGEN_DIR}/tecsgen.py")
+        find_program(PYTHON_EXECUTABLE NAMES python3 python REQUIRED)
+        set(_tecsgen_interpreter "${PYTHON_EXECUTABLE}")
+    else()
         message(FATAL_ERROR
-            "tecsgen.rb not found: ${ASP3_TECSGEN_DIR}/tecsgen.rb")
+            "tecsgen.rb / tecsgen.py not found in ${ASP3_TECSGEN_DIR}")
     endif()
-
-    find_program(RUBY_EXECUTABLE ruby REQUIRED)
 
     file(MAKE_DIRECTORY "${TECS_GEN_DIR}")
 
@@ -71,15 +79,15 @@ function(asp3_tecs_run_generator)
     string(REPLACE ";" " " _cpp_cmd_str "${_cpp_cmd}")
 
     set(_tecsgen_cmd
-        ${RUBY_EXECUTABLE}
-        "${ASP3_TECSGEN_DIR}/tecsgen.rb"
+        ${_tecsgen_interpreter}
+        "${_tecsgen_script}"
         "${TECS_CDL_FILE}"
         -R ${_tecs_includes}
         --cpp "${_cpp_cmd_str}"
         -g "${TECS_GEN_DIR}"
     )
 
-    message(STATUS "Running tecsgen: ${TECS_CDL_FILE}")
+    message(STATUS "Running tecsgen (${_tecsgen_script}): ${TECS_CDL_FILE}")
     execute_process(
         COMMAND ${_tecsgen_cmd}
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"

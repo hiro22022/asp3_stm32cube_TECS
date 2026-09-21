@@ -92,7 +92,8 @@ endif()
 set(ASP3_TARGET stm32n6570_dk)
 include(../../../asp3/asp3_stm32cube.cmake)
 
-option(ASP3_ENABLE_TECS "Build with TECS generator (tecsgen + CDL)" OFF)
+# TECS ASP3_ENABLE_TECSビルド（既定 ON）。OFF で非 TECS（plain-C syssvc）に戻せる。
+option( "Build with TECS generator (tecsgen + CDL)" ON)
 if(ASP3_ENABLE_TECS)
     set(ASP3_OMIT_TECS OFF CACHE BOOL "Use plain-C syssvc (skip tecsgen)" FORCE)
 endif()

@@ -49,8 +49,8 @@ set(ASP3_TARGET stm32h563_nucleo)
 # STM32 協調ヘルパ（ASP3_TARGET_DIR / ASP3_CORE_DIR / ASP3_ROOT_DIR を解決）
 include(../../asp3/asp3_stm32cube.cmake)
 
-# TECS ビルド（既定 OFF＝現行の非 TECS）。ON 時は configure で tecsgen を実行する。
-option(ASP3_ENABLE_TECS "Build with TECS generator (tecsgen + CDL)" OFF)
+# TECS ビルド（既定 ON）。OFF で非 TECS（plain-C syssvc）に戻せる。
+option(ASP3_ENABLE_TECS "Build with TECS generator (tecsgen + CDL)" ON)
 if(ASP3_ENABLE_TECS)
     set(ASP3_OMIT_TECS OFF CACHE BOOL "Use plain-C syssvc (skip tecsgen)" FORCE)
 endif()

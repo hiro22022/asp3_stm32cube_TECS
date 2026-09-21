@@ -9,8 +9,11 @@ TODO は、次のとおり。
  * TECS ジェネレータ生成物の CMake 対応（H563ZI / STM32N6570-DK。手順は [docs/tecs-cmake.md](docs/tecs-cmake.md)）
  * Serial / Syslog の TECS 化（H563ZI と STM32N6570-DK の tUsart / tSIOPortTarget / tSysLog で sample1 経路は実装済み。H533 / C562 へ横展開）
 
+ 以下、フォーク元の README.md をベースに TECS 対応版のビルド、実行に関する手順を加筆してあります。
+ デフォルトで TECS 対応版をビルドしますが、ビルドオプションにより非 TECS 対応版に変更することができます。
+ なお、TECS 対応版で、実際に動作確認まで行っているのは STM32N6570-DK 環境のみです。
+ 
 # TOPPERS/ASP3 Core の STM32 CubeMX 向け環境
-
 
 [TOPPERS/ASP3 Core](https://github.com/toppers/asp3_core)（TECSレス・Python cfg 版 ASP3）を、
 STM32CubeMX が生成する HAL プロジェクトと協調動作させる環境です。
@@ -90,12 +93,12 @@ FW パッケージ未導入の場合はダウンロード確認が出るので�
 ### 2-a. コマンドラインでビルド
 
 ```bash
-cd nucleo_h563zi/sample1  # または nucleo_h533re/sample1
-cmake --preset Debug
+cd nucleo_h563zi/sample1  # N6570-DK は stm32n6570_dk/sample1/FSBL
+cmake --preset Debug      # H563 / N6570 は既定で TECS 有効（Ruby が必要）
 cmake --build build/Debug # → build/Debug/H563ZI.elf
 
-# TECS 有効（Ruby / tecsgen が必要。N6570-DK は stm32n6570_dk/sample1/FSBL）
-cmake --preset Debug -DASP3_ENABLE_TECS=ON
+# 非 TECS（plain-C syssvc）に戻す場合
+cmake --preset Debug -DASP3_ENABLE_TECS=OFF
 cmake --build build/Debug
 ```
 
@@ -317,7 +320,7 @@ asp3_set_stm32_options(${CMAKE_PROJECT_NAME})
 
 ## 制限事項
 
-- TECS: NUCLEO-H563ZI と STM32N6570-DK で CMake 経路を実装（`-DASP3_ENABLE_TECS=ON`）。
+- TECS: NUCLEO-H563ZI と STM32N6570-DK で既定有効（`-DASP3_ENABLE_TECS=OFF` で非 TECS）。
   asp3_core は TECS レスのまま。詳細は [docs/tecs-cmake.md](docs/tecs-cmake.md)。
   H533 / C562 への横展開は未了。
 - TrustZone：**H5 / C5 は TZEN 無効（非 Secure 実行）前提**です。
