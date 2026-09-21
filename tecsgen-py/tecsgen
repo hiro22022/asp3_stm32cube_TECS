@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+#  TECS Generator (Python port)
+#      Generator for TOPPERS Embedded Component System
+#
+#   Copyright (C) 2008-2021 by TOPPERS Project TECS WG
+#
+#   ライセンスは tecsgen.py の冒頭を参照のこと．
+#
+#  Ruby 版の tecsgen スクリプトに対応する起動スクリプト．
+#  直接 tecsgen.py を呼び出すケースがありうるため，このスクリプトで処理を行うべきでない．
+
+exec python3 "$(dirname "$0")/tecsgen.py" "$@"

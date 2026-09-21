@@ -69,8 +69,22 @@ function(asp3_tecs_run_generator)
         endif()
     endforeach()
 
+    #  arm-none-eabi-gcc 15 以降は既定が C23 のため、stddef.h に
+    #  `typedef __typeof__(nullptr) nullptr_t;` が出て tecsgen の C パーサが落ちる。
+    #  本体ビルド（CMAKE_C_STANDARD=11 + EXTENSIONS）に合わせて gnu11 にする。
+    if(DEFINED CMAKE_C_STANDARD AND CMAKE_C_STANDARD)
+        if(CMAKE_C_EXTENSIONS)
+            set(_tecs_c_std "gnu${CMAKE_C_STANDARD}")
+        else()
+            set(_tecs_c_std "c${CMAKE_C_STANDARD}")
+        endif()
+    else()
+        set(_tecs_c_std "gnu11")
+    endif()
+
     set(_cpp_cmd
         "${CMAKE_C_COMPILER}"
+        -std=${_tecs_c_std}
         ${_tecs_defs}
         ${_tecs_includes}
         -DTECSGEN
