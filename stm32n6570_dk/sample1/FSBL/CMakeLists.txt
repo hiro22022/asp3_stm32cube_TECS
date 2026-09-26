@@ -109,6 +109,12 @@ endif()
 set(ASP3_TARGET stm32n6570_dk)
 include(../../../asp3/asp3_stm32cube.cmake)
 
+# TECS ASP3_ENABLE_TECSビルド（既定 ON）。OFF で非 TECS（plain-C syssvc）に戻せる。
+option(ASP3_ENABLE_TECS "Build with TECS generator (tecsgen + CDL)" ON)
+if(ASP3_ENABLE_TECS)
+    set(ASP3_OMIT_TECS OFF CACHE BOOL "Use plain-C syssvc (skip tecsgen)" FORCE)
+endif()
+
 if(NOT DEFINED ASP3_APPLDIR)
     set(ASP3_APPLDIR  ${ASP3_CORE_DIR}/sample)
     set(ASP3_APPLNAME sample1)
@@ -120,6 +126,15 @@ if(ASP3_APPLNAME STREQUAL "sample1")
         ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd/board_lcd.cfg)
     list(APPEND ASP3_APP_INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd)
+endif()
+
+if(ASP3_ENABLE_TECS)
+    include(${ASP3_STM32_DIR}/cmake/Asp3Tecs.cmake)
+    asp3_tecs_setup_paths()
+    if(NOT DEFINED ASP3_APPL_CDL)
+        set(ASP3_APPL_CDL ${ASP3_STM32_DIR}/sample/sample1.cdl)
+    endif()
+    asp3_tecs_configure("${ASP3_APPL_CDL}" "${CMAKE_BINARY_DIR}/generated")
 endif()
 
 set(ASP3_LIBRARY_ONLY ON CACHE BOOL "build asp3 as library only" FORCE)
@@ -138,14 +153,11 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     asp3
 )
 
-asp3_add_syssvc(${CMAKE_PROJECT_NAME})
+if(ASP3_ENABLE_TECS)
+    asp3_tecs_clear_omit_tecs()
+    asp3_tecs_apply_manifest(${CMAKE_PROJECT_NAME})
+    asp3_tecs_add_support_sources(${CMAKE_PROJECT_NAME})
+else()
+    asp3_add_syssvc(${CMAKE_PROJECT_NAME})
+endif()
 asp3_set_stm32_options(${CMAKE_PROJECT_NAME})
-
-
-
-
-
-
-
-
-

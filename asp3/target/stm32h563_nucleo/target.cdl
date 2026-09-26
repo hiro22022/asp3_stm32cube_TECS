@@ -1,0 +1,21 @@
+/*
+ *  ターゲット依存セルの組上げ（NUCLEO-H563ZI）
+ */
+
+const size_t DefaultTaskStackSize = 4096;
+const size_t LogTaskStackSize = DefaultTaskStackSize;
+
+const char *const BannerTargetName = "NUCLEO-H563ZI (ARM Cortex-M33)";
+const char *const BannerCopyrightNotice = "";
+
+import("tPutLogTarget.cdl");
+import("tSIOPortTarget.cdl");
+
+cell tSIOPortTarget SIOPortTarget1 {
+	baseAddress     = C_EXP("USART_BASE");
+	interruptNumber = C_EXP("USART_INTNO");
+};
+
+cell tPutLogTarget PutLogTarget {
+	cSIOPort = SIOPortTarget1.eSIOPort;
+};

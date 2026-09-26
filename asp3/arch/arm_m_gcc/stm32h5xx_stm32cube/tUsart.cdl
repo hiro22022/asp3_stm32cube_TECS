@@ -1,0 +1,15 @@
+/*
+ *		STM32H5 USART 用 簡易SIOドライバのコンポーネント記述
+ */
+
+celltype tUsart {
+	entry	sSIOPort	eSIOPort;
+	call	siSIOCBR	ciSIOCBR;
+
+	entry	siHandlerBody	eiISR;
+
+	attr {
+		uintptr_t	baseAddress;	/* UARTレジスタのベースアドレス */
+		uint32_t	bps;			/* ボーレート（CubeMX 初期化済みなら未使用） */
+	};
+};

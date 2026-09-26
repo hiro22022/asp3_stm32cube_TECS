@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+#  TECS Merger (Python port)
+#      Merger for TECS generated templates
+#
+#   Copyright (C) 2008-2017 by TOPPERS Project
+#
+#   ライセンスは tecsmerge.py の冒頭を参照のこと．
+#
+#  Ruby 版の tecsmerge スクリプトに対応する起動スクリプト．
+
+exec python3 "$(dirname "$0")/tecsmerge.py" "$@"

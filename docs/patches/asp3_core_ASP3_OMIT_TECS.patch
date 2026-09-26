@@ -1,0 +1,31 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -51,9 +51,16 @@ list(APPEND ASP3_INCLUDE_DIRS
+     ${ASP3_ROOT_DIR}/include
+ )
+ 
+-list(APPEND ASP3_COMPILE_DEFS
+-    TOPPERS_OMIT_TECS
+-)
++#  既定は非 TECS（現行どおり）。外側 SDK リポジトリが TECS を使う場合は
++#  add_subdirectory の前に -DASP3_OMIT_TECS=OFF を渡す。
++option(ASP3_OMIT_TECS "Use plain-C syssvc (skip tecsgen)" ON)
++if(ASP3_OMIT_TECS)
++    list(APPEND ASP3_COMPILE_DEFS
++        TOPPERS_OMIT_TECS
++    )
++endif()
+ 
+ #
+ #  共通コンパイルオプション（sample/MakefileのCOPTS既定と同一）
+@@ -89,7 +96,7 @@ file(MAKE_DIRECTORY ${CFG_GEN_DIR})
+ #  test/のテストプログラムの.cfgが INCLUDE("tecsgen.cfg") するため，
+ #  非TECS版システムサービスのINCLUDEに展開するスタブを生成しておく
+ #  （非TECS版システムサービス ユーザーズマニュアル §2.7の方法）
+-#
+-if(NOT EXISTS ${CFG_GEN_DIR}/tecsgen.cfg)
++#  TECS ビルドでは外側が本物の tecsgen.cfg を先に置く。
++if(ASP3_OMIT_TECS AND NOT EXISTS ${CFG_GEN_DIR}/tecsgen.cfg)
+     file(WRITE ${CFG_GEN_DIR}/tecsgen.cfg
+         "INCLUDE(\"syssvc/syslog.cfg\");\n"
+         "INCLUDE(\"syssvc/banner.cfg\");\n"
