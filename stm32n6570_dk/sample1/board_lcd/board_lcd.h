@@ -30,6 +30,9 @@
 #define LCD_COLOR_CYAN    0x07FFU
 #define LCD_COLOR_ORANGE  0xFD20U
 
+/*
+ * 描画プリミティブ。TECS 時は sLcdDraw（tLcd.eDraw）からも呼べる。
+ */
 int board_lcd_init(void);
 void board_lcd_clear(uint16_t rgb565);
 void board_lcd_fill_rect(int x, int y, int w, int h, uint16_t rgb565);
