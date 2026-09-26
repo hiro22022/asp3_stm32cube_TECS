@@ -10,6 +10,7 @@ const char *const BannerCopyrightNotice = "";
 
 import("tPutLogTarget.cdl");
 import("tSIOPortTarget.cdl");
+import("tLcd.cdl");
 
 cell tSIOPortTarget SIOPortTarget1 {
 	baseAddress     = C_EXP("USART_BASE");
@@ -18,4 +19,17 @@ cell tSIOPortTarget SIOPortTarget1 {
 
 cell tPutLogTarget PutLogTarget {
 	cSIOPort = SIOPortTarget1.eSIOPort;
+};
+
+/*
+ *  TFT コンソール。描画周期 20ms（旧 board_lcd.cfg の CRE_CYC 相当）
+ */
+cell tLcd Lcd {
+};
+
+cell tCyclicHandler LcdConsoleCyclic {
+	attribute  = C_EXP("TA_STA");
+	cycleTime  = 20000;
+	cyclePhase = 0;
+	ciHandlerBody = Lcd.eiConsolePoll;
 };

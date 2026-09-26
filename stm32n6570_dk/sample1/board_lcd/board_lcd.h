@@ -39,12 +39,16 @@ void board_lcd_puts(int x, int y, const char *s, uint16_t fg, uint16_t bg);
 /*
  * スクロールするコンソール（ASP3 タスクから直接呼んでよい）。
  * 改行で1行上にスクロールする。
+ * TECS 時は sLcdConsole（tLcd.eConsole）からも呼べる。
  */
 void board_lcd_putc(char c);
 void board_lcd_print(const char *s);
 void board_lcd_console_set_color(uint16_t fg, uint16_t bg);
 
-/* SIO / target_fput_log からの投入（ISR 可。描画は cyclic が行う） */
+/*
+ * SIO / target_fput_log からの投入（ISR 可。描画は cyclic が行う）。
+ * TECS 時は sLcdFeed（tLcd.eFeed）／siHandlerBody（tLcd.eiConsolePoll）。
+ */
 void board_lcd_putc_from_sio(char c);
 void board_lcd_console_poll(intptr_t exinf);
 

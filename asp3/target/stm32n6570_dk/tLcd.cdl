@@ -1,0 +1,32 @@
+/*
+ *		STM32N6570-DK TFT（RK050HR18）コンソール用シグニチャ／セルタイプ
+ *
+ *  描画プリミティブ（sLcdDraw）は後続。ここではスクロールコンソールと
+ *  ISR 可の投入、および描画周期ハンドラ本体だけを公開する。
+ */
+
+/*
+ *  タスク文脈のスクロールコンソール
+ */
+signature sLcdConsole {
+	void	putChar([in] char c);
+	void	print([in] const char *s);
+	void	setColor([in] uint16_t fg, [in] uint16_t bg);
+};
+
+/*
+ *  ISR 可の文字投入（キューへ。描画は eiConsolePoll 側）
+ */
+signature sLcdFeed {
+	void	putChar([in] char c);
+};
+
+/*
+ *  LCD コンソールセル（実装は board_lcd.c をラップ）
+ */
+[singleton]
+celltype tLcd {
+	entry	sLcdConsole		eConsole;
+	entry	sLcdFeed		eFeed;
+	entry	siHandlerBody	eiConsolePoll;
+};

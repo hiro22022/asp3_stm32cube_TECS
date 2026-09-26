@@ -120,12 +120,13 @@ if(NOT DEFINED ASP3_APPLDIR)
     set(ASP3_APPLNAME sample1)
 endif()
 
-# sample1 のときだけ LCD コンソール用 cyclic を足す（test_porting 等には載せない）
-if(ASP3_APPLNAME STREQUAL "sample1")
+# LCD ヘッダは常に見えるようにする（tLcd.c / main.c 用）。
+# cyclic は TECS 時 target.cdl の tCyclicHandler、非 TECS 時は board_lcd.cfg。
+list(APPEND ASP3_APP_INCLUDE_DIRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd)
+if(ASP3_APPLNAME STREQUAL "sample1" AND NOT ASP3_ENABLE_TECS)
     list(APPEND ASP3_CFG_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd/board_lcd.cfg)
-    list(APPEND ASP3_APP_INCLUDE_DIRS
-        ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd)
 endif()
 
 if(ASP3_ENABLE_TECS)
