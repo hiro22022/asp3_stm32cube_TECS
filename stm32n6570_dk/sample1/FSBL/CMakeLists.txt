@@ -52,10 +52,13 @@ include("mx-generated.cmake")
 target_compile_definitions(stm32cubemx INTERFACE
     HAL_LTDC_MODULE_ENABLED
     HAL_RIF_MODULE_ENABLED
+    HAL_HCD_MODULE_ENABLED
 )
 target_sources(STM32_Drivers PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_rif.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_hcd.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_ll_usb.c
 )
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd/board_lcd.c
@@ -63,6 +66,9 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd
 )
+
+# USBX Host HID Keyboard（UX_STANDALONE）
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/UsbXHostHidKbd.cmake)
 
 
 # In order to use CMake for cross-compiling
@@ -120,10 +126,10 @@ if(NOT DEFINED ASP3_APPLDIR)
     set(ASP3_APPLNAME sample1)
 endif()
 
-# LCD ヘッダは常に見えるようにする（tLcd.c / main.c 用）。
-# cyclic は TECS 時 target.cdl の tCyclicHandler、非 TECS 時は board_lcd.cfg。
+# LCD / USB HID ヘッダは常に見えるようにする。
 list(APPEND ASP3_APP_INCLUDE_DIRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd
+    ${CMAKE_CURRENT_SOURCE_DIR}/../board_usb_hid_kbd)
 if(ASP3_APPLNAME STREQUAL "sample1" AND NOT ASP3_ENABLE_TECS)
     list(APPEND ASP3_CFG_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd/board_lcd.cfg)

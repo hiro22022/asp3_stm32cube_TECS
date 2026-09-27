@@ -11,6 +11,7 @@ const char *const BannerCopyrightNotice = "";
 import("tPutLogTarget.cdl");
 import("tSIOPortTarget.cdl");
 import("tLcd.cdl");
+import("tUsbHidKeyboard.cdl");
 
 cell tSIOPortTarget SIOPortTarget1 {
 	baseAddress     = C_EXP("USART_BASE");
@@ -32,4 +33,36 @@ cell tCyclicHandler LcdConsoleCyclic {
 	cycleTime  = 20000;
 	cyclePhase = 0;
 	ciHandlerBody = Lcd.eiConsolePoll;
+};
+
+/*
+ *  USB HID Keyboard（USBX Host standalone）。
+ *  ポンプはタスク文脈（1ms）。IRQ は USB2_OTG_HS（CN17 Type-A）。
+ *  取得文字は Lcd.eFeed へ。
+ */
+cell tUsbHidKeyboard UsbHidKeyboard {
+	cFeed = Lcd.eFeed;
+};
+
+cell tTask UsbHidKbdTask {
+	attribute = C_EXP("TA_ACT");
+	priority  = 9;
+	stackSize = 4096;
+	cTaskBody = UsbHidKeyboard.eTaskBody;
+};
+
+cell tISR UsbHidKbdISR {
+	interruptNumber = C_EXP("USB_OTG_HS_INTNO");
+	isrPriority     = 1;
+	ciISRBody       = UsbHidKeyboard.eiIrq;
+};
+
+/*
+ *  TA_NULL: sta_ker 直後はまだ Host 未開始のため割込みを自動許可しない。
+ *  タスク側で HAL_HCD_Start 後に ena_int する。
+ */
+cell tInterruptRequest UsbHidKbdInterruptRequest {
+	interruptNumber   = C_EXP("USB_OTG_HS_INTNO");
+	interruptPriority = -2;
+	attribute         = C_EXP("TA_NULL");
 };

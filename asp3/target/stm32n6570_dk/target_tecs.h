@@ -31,4 +31,12 @@
 #define BPS_SETTING		115200
 #endif
 
+/* USB2 OTG HS / CN17 Type-A（stm32n657xx.h: USB2_OTG_HS_IRQn = 178） */
+#ifndef USB2_OTG_HS_IRQn
+#define USB2_OTG_HS_IRQn	178
+#endif
+#ifndef USB_OTG_HS_INTNO
+#define USB_OTG_HS_INTNO	(USB2_OTG_HS_IRQn + 16)
+#endif
+
 #endif /* TOPPERS_TARGET_TECS_H */

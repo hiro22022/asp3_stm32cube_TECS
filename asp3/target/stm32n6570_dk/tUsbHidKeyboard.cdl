@@ -1,0 +1,18 @@
+/*
+ *		STM32N6570-DK USB HID Keyboard 用シグニチャ／セルタイプ
+ */
+
+signature sUsbHidKeyboard {
+	ER		init(void);
+	bool_t	isConnected(void);
+	int_t	getChar(void);
+};
+
+[singleton]
+celltype tUsbHidKeyboard {
+	entry	sUsbHidKeyboard	eKeyboard;
+	entry	sTaskBody		eTaskBody;
+	entry	siHandlerBody	eiIrq;
+	[optional]
+	call	sLcdFeed		cFeed;
+};

@@ -137,6 +137,9 @@ TEDCS マージ版
 
 TFT TECS化版
 "%OPENOCD%" -s "%OSCRIPTS%" -f "%OCFG%" -c "gdb_port disabled" -c "init" -c "reset halt" -c "load_image N6570DK_FSBL.elf" -c "mdw 0x34180400 4" -c "mww 0xE000ED08 0x34180400" -c "reg msp 0x34200000" -c "reg pc 0x3418e6a1" -c "reg pc" -c "resume" -c "exit"
+
+USB キーボード対応版
+"%OPENOCD%" -s "%OSCRIPTS%" -f "%OCFG%" -c "gdb_port disabled" -c "init" -c "reset halt" -c "load_image N6570DK_FSBL.elf" -c "mdw 0x34180400 4" -c "mww 0xE000ED08 0x34180400" -c "reg msp 0x34200000" -c "reg pc 0x34180f31" -c "reg pc" -c "resume" -c "exit"
 ```
 
 `reg pc 0x34180ef9` の値は、§1 の `readelf` 結果に置き換える。
