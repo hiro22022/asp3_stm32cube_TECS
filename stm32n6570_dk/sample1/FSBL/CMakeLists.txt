@@ -130,9 +130,34 @@ endif()
 list(APPEND ASP3_APP_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd
     ${CMAKE_CURRENT_SOURCE_DIR}/../board_usb_hid_kbd)
+
+# microSD + FatFs は非 TECS のときだけ。TECS セルはまだ作らない。
+if(NOT ASP3_ENABLE_TECS)
+    target_compile_definitions(stm32cubemx INTERFACE
+        HAL_SD_MODULE_ENABLED
+    )
+    target_sources(STM32_Drivers PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_sd.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_sd_ex.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_ll_sdmmc.c
+    )
+    target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../board_sd/board_sd.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/../board_sd/diskio.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Middlewares/Third_Party/FatFs/ff.c
+    )
+    target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../board_sd
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Middlewares/Third_Party/FatFs
+    )
+    list(APPEND ASP3_APP_INCLUDE_DIRS
+        ${CMAKE_CURRENT_SOURCE_DIR}/../board_sd)
+endif()
+
 if(ASP3_APPLNAME STREQUAL "sample1" AND NOT ASP3_ENABLE_TECS)
     list(APPEND ASP3_CFG_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd/board_lcd.cfg)
+        ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd/board_lcd.cfg
+        ${CMAKE_CURRENT_SOURCE_DIR}/../board_sd/board_sd.cfg)
 endif()
 
 if(ASP3_ENABLE_TECS)
