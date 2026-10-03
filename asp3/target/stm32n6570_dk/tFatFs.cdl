@@ -1,0 +1,119 @@
+/*
+ *		FatFs 用シグニチャ／セルタイプ（STM32N6570-DK CN13）
+ *
+ *  隣の FatFs/ff004_tecs（R0.04 暫定）のセル構成を踏襲する。
+ *  こちらの ff.c は R0.15b のままにし、セル実装が f_* / disk_* を呼ぶ。
+ *  ボリュームは 1、同時に開けるファイルとディレクトリは各 1。
+ *  chmod / mkfs は ffconf で無効なので、受け口はエラーを返す。
+ */
+
+/*
+ *  8.3 名のファイル情報。FatFs の FILINFO とは別名にして、
+ *  セル実装が ff.h と同時にインクルードできるようにする。
+ */
+typedef struct FatFileInfo {
+	uint32_t	fsize;
+	uint16_t	fdate;
+	uint16_t	ftime;
+	uint8_t		fattrib;
+	char		fname[13];
+} FatFileInfo;
+
+signature sFATFS {
+	int_t	mount([in] uint8_t Drive);
+	int_t	getfree([in, string] const char *Path,
+					[out] uint32_t *Clusters);
+};
+
+signature sFATFILE {
+	int_t	open([in, string] const char *FileName,
+				 [in] uint8_t ModeFlags);
+	int_t	close(void);
+	int_t	read([out, size_is(ByteToRead)] uint8_t *Buffer,
+				 [in] uint_t ByteToRead,
+				 [out] uint_t *ByteRead);
+	int_t	write([in, size_is(ByteToWrite)] const uint8_t *Buffer,
+				  [in] uint_t ByteToWrite,
+				  [out] uint_t *ByteWritten);
+	int_t	lseek([in] uint32_t Offset);
+	int_t	sync(void);
+};
+
+signature sFATDIR {
+	int_t	opendir([in, string] const char *DirName);
+	int_t	readdir([out] FatFileInfo *FileInfo);
+	int_t	closedir(void);
+};
+
+signature sFATFSS {
+	int_t	stat([in, string] const char *FileName,
+				 [out] FatFileInfo *FileInfo);
+	int_t	mkdir([in, string] const char *DirName);
+	int_t	unlink([in, string] const char *FileName);
+	int_t	chmod([in, string] const char *FileName,
+				  [in] uint8_t Attribute,
+				  [in] uint8_t AttributeMask);
+	int_t	rename([in, string] const char *OldName,
+				   [in, string] const char *NewName);
+	int_t	mkfs([in] uint8_t Drive,
+				 [in] uint8_t PartitioningRule,
+				 [in] uint32_t AllocSize);
+};
+
+/*
+ *  ディスク I/O。ff.c から disk_* への経路は C のまま。
+ *  isPresent / getInfo はカード検出と容量表示用の追加。
+ */
+signature sDiskIO {
+	int_t		initialize(void);
+	int_t		status(void);
+	int_t		read([out, size_is(SectorCount * 512)] uint8_t *Buffer,
+					 [in] uint32_t SectorNumber,
+					 [in] uint_t SectorCount);
+	int_t		write([in, size_is(SectorCount * 512)] const uint8_t *Buffer,
+					  [in] uint32_t SectorNumber,
+					  [in] uint_t SectorCount);
+	int_t		ioctl([in] uint8_t cmd, [inout] void *param);
+	uint32_t	get_fattime(void);
+	int_t		isPresent(void);
+	int_t		getInfo([out] uint32_t *blockCount,
+						[out] uint32_t *blockSize);
+};
+
+[singleton]
+celltype tDiskIO {
+	entry sDiskIO eDisk;
+};
+
+[singleton]
+celltype tFATFS {
+	entry sFATFS eF;
+	call  sDiskIO cDisk;
+};
+
+[singleton]
+celltype tFATFILE {
+	entry sFATFILE eF;
+};
+
+[singleton]
+celltype tFATDIR {
+	entry sFATDIR eF;
+};
+
+[singleton]
+celltype tFATFSS {
+	entry sFATFSS eF;
+};
+
+/*
+ *  非 TECS の SD_DEMO_TASK と同じ確認（TEST.TXT 読み、ASP3.LOG 書き戻し）。
+ */
+[singleton]
+celltype tFatFsDemo {
+	entry sTaskBody eTaskBody;
+	call  sFATFS cFS;
+	call  sFATFILE cFile;
+	call  sDiskIO cDisk;
+	call  sLcdConsole cLcd;
+};

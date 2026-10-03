@@ -12,6 +12,7 @@ import("tPutLogTarget.cdl");
 import("tSIOPortTarget.cdl");
 import("tLcd.cdl");
 import("tUsbHidKeyboard.cdl");
+import("tFatFs.cdl");
 
 cell tSIOPortTarget SIOPortTarget1 {
 	baseAddress     = C_EXP("USART_BASE");
@@ -65,4 +66,38 @@ cell tInterruptRequest UsbHidKbdInterruptRequest {
 	interruptNumber   = C_EXP("USB_OTG_HS_INTNO");
 	interruptPriority = -2;
 	attribute         = C_EXP("TA_NULL");
+};
+
+/*
+ *  CN13 microSD + FatFs。確認タスクは USB より低く、一度走って終わる。
+ *  非 TECS のときは board_sd.cfg の SD_DEMO_TASK が同じ手順を行う。
+ */
+cell tDiskIO SdDisk {
+};
+
+cell tFATFS FatFs {
+	cDisk = SdDisk.eDisk;
+};
+
+cell tFATFILE FatFile {
+};
+
+cell tFATDIR FatDir {
+};
+
+cell tFATFSS FatFsService {
+};
+
+cell tFatFsDemo FatFsDemo {
+	cFS   = FatFs.eF;
+	cFile = FatFile.eF;
+	cDisk = SdDisk.eDisk;
+	cLcd  = Lcd.eConsole;
+};
+
+cell tTask FatFsTask {
+	attribute = C_EXP("TA_ACT");
+	priority  = 10;
+	stackSize = 4096;
+	cTaskBody = FatFsDemo.eTaskBody;
 };

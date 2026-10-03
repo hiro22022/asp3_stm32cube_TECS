@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------/
-/  FatFs R0.15b configuration for STM32N6570-DK (non-TECS)
+/  FatFs R0.15b configuration for STM32N6570-DK (TECS / non-TECS)
 /
 /  ff.h includes this file. It lives next to the board driver so the
 /  upstream ffconf.h is not copied beside ff.h.

@@ -1,7 +1,7 @@
 /**
  * STM32N6570-DK CN13 microSD（SDMMC2、ポーリング）。
  * FatFs の diskio と、非 TECS ビルドの SD_DEMO_TASK から使う。
- * TECS セルはここでは作らない。
+ * TECS 版のセルは asp3/target/stm32n6570_dk/tFatFs.cdl。
  */
 #ifndef BOARD_SD_H
 #define BOARD_SD_H
