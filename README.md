@@ -1,5 +1,9 @@
 # TOPPERS/ASP3 Core の TECS 対応
 
+## 状態
+
+現状では、cmake 対応版 TECS ジェネレータを開発するための試験敵なものです。
+
 ## 概要
 
 TOPPERS/ASP3 COre の STM32 CubeMX 向け環境 をベースに TECS 対応する。
