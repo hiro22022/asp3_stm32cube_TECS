@@ -10,9 +10,6 @@ const char *const BannerCopyrightNotice = "";
 
 import("tPutLogTarget.cdl");
 import("tSIOPortTarget.cdl");
-import("tLcd.cdl");
-import("tUsbHidKeyboard.cdl");
-import("tFatFs.cdl");
 
 cell tSIOPortTarget SIOPortTarget1 {
 	baseAddress     = C_EXP("USART_BASE");
@@ -21,83 +18,4 @@ cell tSIOPortTarget SIOPortTarget1 {
 
 cell tPutLogTarget PutLogTarget {
 	cSIOPort = SIOPortTarget1.eSIOPort;
-};
-
-/*
- *  TFT コンソール。描画周期 20ms（旧 board_lcd.cfg の CRE_CYC 相当）
- */
-cell tLcd Lcd {
-};
-
-cell tCyclicHandler LcdConsoleCyclic {
-	attribute  = C_EXP("TA_STA");
-	cycleTime  = 20000;
-	cyclePhase = 0;
-	ciHandlerBody = Lcd.eiConsolePoll;
-};
-
-/*
- *  USB HID Keyboard（USBX Host standalone）。
- *  ポンプはタスク文脈（1ms）。IRQ は USB2_OTG_HS（CN17 Type-A）。
- *  取得文字は Lcd.eFeed へ。
- */
-cell tUsbHidKeyboard UsbHidKeyboard {
-	cFeed = Lcd.eFeed;
-};
-
-cell tTask UsbHidKbdTask {
-	attribute = C_EXP("TA_ACT");
-	priority  = 9;
-	stackSize = 4096;
-	cTaskBody = UsbHidKeyboard.eTaskBody;
-};
-
-cell tISR UsbHidKbdISR {
-	interruptNumber = C_EXP("USB_OTG_HS_INTNO");
-	isrPriority     = 1;
-	ciISRBody       = UsbHidKeyboard.eiIrq;
-};
-
-/*
- *  TA_NULL: sta_ker 直後はまだ Host 未開始のため割込みを自動許可しない。
- *  タスク側で HAL_HCD_Start 後に ena_int する。
- */
-cell tInterruptRequest UsbHidKbdInterruptRequest {
-	interruptNumber   = C_EXP("USB_OTG_HS_INTNO");
-	interruptPriority = -2;
-	attribute         = C_EXP("TA_NULL");
-};
-
-/*
- *  CN13 microSD + FatFs。確認タスクは USB より低く、一度走って終わる。
- *  非 TECS のときは board_sd.cfg の SD_DEMO_TASK が同じ手順を行う。
- */
-cell tDiskIO SdDisk {
-};
-
-cell tFATFS FatFs {
-	cDisk = SdDisk.eDisk;
-};
-
-cell tFATFILE FatFile {
-};
-
-cell tFATDIR FatDir {
-};
-
-cell tFATFSS FatFsService {
-};
-
-cell tFatFsDemo FatFsDemo {
-	cFS   = FatFs.eF;
-	cFile = FatFile.eF;
-	cDisk = SdDisk.eDisk;
-	cLcd  = Lcd.eConsole;
-};
-
-cell tTask FatFsTask {
-	attribute = C_EXP("TA_ACT");
-	priority  = 10;
-	stackSize = 4096;
-	cTaskBody = FatFsDemo.eTaskBody;
 };

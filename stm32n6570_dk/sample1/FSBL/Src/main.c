@@ -23,8 +23,6 @@
 /* USER CODE BEGIN Includes */
 #include "target_kernel.h"
 #include "stm32n6xx_ll_tim.h"
-#include "board_lcd.h"
-#include "board_usb_hid_kbd.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -105,15 +103,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
-  if (board_lcd_init() == 0) {
-    board_lcd_print("TOPPERS/ASP3  STM32N6570-DK\n");
-    board_lcd_print("LCD console ready.\n");
-  }
-  if (board_usb_hid_kbd_init() == 0) {
-    board_lcd_print("USB HID kbd (CN17 Type-A) ready.\n");
-  } else {
-    board_lcd_print("USB HID keyboard init failed.\n");
-  }
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

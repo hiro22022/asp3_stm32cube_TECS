@@ -47,29 +47,6 @@ add_executable(${CMAKE_PROJECT_NAME})
 # Include mx-generated
 include("mx-generated.cmake")
 
-# LCD (LTDC + RIF)。CubeMX 再生成で mx-generated.cmake / hal_conf.h が
-# 巻き戻っても、ここと -D でモジュールを足し直す。
-target_compile_definitions(stm32cubemx INTERFACE
-    HAL_LTDC_MODULE_ENABLED
-    HAL_RIF_MODULE_ENABLED
-    HAL_HCD_MODULE_ENABLED
-)
-target_sources(STM32_Drivers PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_rif.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_hcd.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_ll_usb.c
-)
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd/board_lcd.c
-)
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd
-)
-
-# USBX Host HID Keyboard（UX_STANDALONE）
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/UsbXHostHidKbd.cmake)
-
 
 # In order to use CMake for cross-compiling
 set(CMAKE_CXX_COMPILER_FORCED "true")
@@ -116,7 +93,7 @@ set(ASP3_TARGET stm32n6570_dk)
 include(../../../asp3/asp3_stm32cube.cmake)
 
 # TECS ASP3_ENABLE_TECSビルド（既定 ON）。OFF で非 TECS（plain-C syssvc）に戻せる。
-option(ASP3_ENABLE_TECS "Build with TECS generator (tecsgen + CDL)" ON)
+option( "Build with TECS generator (tecsgen + CDL)" ON)
 if(ASP3_ENABLE_TECS)
     set(ASP3_OMIT_TECS OFF CACHE BOOL "Use plain-C syssvc (skip tecsgen)" FORCE)
 endif()
@@ -124,38 +101,6 @@ endif()
 if(NOT DEFINED ASP3_APPLDIR)
     set(ASP3_APPLDIR  ${ASP3_CORE_DIR}/sample)
     set(ASP3_APPLNAME sample1)
-endif()
-
-# LCD / USB HID ヘッダは常に見えるようにする。
-list(APPEND ASP3_APP_INCLUDE_DIRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd
-    ${CMAKE_CURRENT_SOURCE_DIR}/../board_usb_hid_kbd)
-
-# microSD + FatFs。TECS セルと非 TECS の SD_DEMO_TASK の両方が使う。
-target_compile_definitions(stm32cubemx INTERFACE
-    HAL_SD_MODULE_ENABLED
-)
-target_sources(STM32_Drivers PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_sd.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_sd_ex.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_ll_sdmmc.c
-)
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../board_sd/board_sd.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../board_sd/diskio.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Middlewares/Third_Party/FatFs/ff.c
-)
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../board_sd
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Middlewares/Third_Party/FatFs
-)
-list(APPEND ASP3_APP_INCLUDE_DIRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/../board_sd)
-
-if(ASP3_APPLNAME STREQUAL "sample1" AND NOT ASP3_ENABLE_TECS)
-    list(APPEND ASP3_CFG_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/../board_lcd/board_lcd.cfg
-        ${CMAKE_CURRENT_SOURCE_DIR}/../board_sd/board_sd.cfg)
 endif()
 
 if(ASP3_ENABLE_TECS)
@@ -191,3 +136,12 @@ else()
     asp3_add_syssvc(${CMAKE_PROJECT_NAME})
 endif()
 asp3_set_stm32_options(${CMAKE_PROJECT_NAME})
+
+
+
+
+
+
+
+
+
