@@ -806,11 +806,12 @@ OTHER_OBJS ={objs_add}                      # Add objects out of tecs care.
         #  Make 変数は is_absolute_path?（先頭 '$'）より先に CMake 変数へ置換する
         path = (path.replace("$(GEN_DIR)/", "${TECS_GEN_DIR}/")
                     .replace("$(GEN_DIR)", "${TECS_GEN_DIR}")
-                    .replace("$(TECSPATH)", "${ASP3_TECSGEN_DIR}/tecs"))
+                    .replace("$(TECSPATH)", "${TECSPATH}"))
         if path.startswith("${"):
             return path
         if TECSGEN.is_absolute_path(path):
-            return TECSGEN.subst_tecspath(path).replace("\\", "/")
+            return (TECSGEN.subst_tecspath(path).replace("\\", "/")
+                    .replace("$(TECSPATH)", "${TECSPATH}"))
         return path
 
     def cmake_write_list(self, f, varname, items):
@@ -917,11 +918,11 @@ OTHER_OBJS ={objs_add}                      # Add objects out of tecs care.
             if TECSGEN.is_absolute_path(path):
                 include_dirs.append(self.cmake_normalize_path(TECSGEN.subst_tecspath(path)))
             elif path == ".":
-                include_dirs.append("${ASP3_SRCDIR}")
+                include_dirs.append("${TECS_BASE_DIR}")
             else:
                 include_dirs.append(
                     self.cmake_normalize_path("$(BASE_DIR)/{}".format(path)).replace(
-                        "$(BASE_DIR)", "${ASP3_SRCDIR}"))
+                        "$(BASE_DIR)", "${TECS_BASE_DIR}"))
         include_dirs.append("${TECS_GEN_DIR}")
         include_dirs += [self.cmake_normalize_path(p) for p in TECSGEN.CMake.get_includes()]
 

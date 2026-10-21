@@ -6,22 +6,40 @@
 #
 #  前提変数（asp3_stm32cube.cmake および呼び出し側で設定）:
 #    ASP3_STM32_DIR, ASP3_CORE_DIR, ASP3_TARGET_DIR
-#    ASP3_TECSGEN_DIR, ASP3_TECS_KERNEL_DIR
+#    TECSPATH, ASP3_TECS_KERNEL_DIR, TECS_BASE_DIR
+#
+#  TECSPATH は tecsgen のコンポーネントディレクトリ。
+#  tecsgen/tecs → tecsgen-rb/tecs → tecsgen-py/tecs の順に存在する方を使う。
+#  マニフェストの ${TECSPATH}/mruby 等がここを基準にする。
+#  tecsgen.py / tecsgen.rb は TECSPATH の親（tecsgen インストールルート）にある。
 #
 
-if(NOT DEFINED ASP3_TECSGEN_DIR)
-    get_filename_component(ASP3_TECSGEN_DIR
-        "${ASP3_STM32_DIR}/../tecsgen" ABSOLUTE)
+if(NOT DEFINED TECSPATH)
+    foreach(_tecs_cand
+            "${ASP3_STM32_DIR}/../tecsgen/tecs"
+            "${ASP3_STM32_DIR}/../tecsgen-rb/tecs"
+            "${ASP3_STM32_DIR}/../tecsgen-py/tecs")
+        get_filename_component(_tecs_cand "${_tecs_cand}" ABSOLUTE)
+        if(IS_DIRECTORY "${_tecs_cand}")
+            set(TECSPATH "${_tecs_cand}")
+            break()
+        endif()
+    endforeach()
+    unset(_tecs_cand)
+    if(NOT TECSPATH)
+        message(FATAL_ERROR
+            "TECSPATH not found (tried tecsgen/tecs, tecsgen-rb/tecs, tecsgen-py/tecs under ${ASP3_STM32_DIR}/..)")
+    endif()
 endif()
 if(NOT DEFINED ASP3_TECS_KERNEL_DIR)
     set(ASP3_TECS_KERNEL_DIR "${ASP3_STM32_DIR}/tecs_kernel")
 endif()
 
-#  マニフェストが ${ASP3_SRCDIR}/<celltype>.c を参照するためのルート。
+#  マニフェストが ${TECS_BASE_DIR}/<celltype>.c を参照するためのルート。
 #  セル実装は syssvc/・tecs_kernel/・target/・chip に散在するので、
 #  apply 時に複数ディレクトリを探索する。
-if(NOT DEFINED ASP3_SRCDIR)
-    set(ASP3_SRCDIR "${ASP3_STM32_DIR}")
+if(NOT DEFINED TECS_BASE_DIR)
+    set(TECS_BASE_DIR "${ASP3_STM32_DIR}")
 endif()
 
 function(asp3_tecs_run_generator)
@@ -39,19 +57,21 @@ function(asp3_tecs_run_generator)
     if(NOT EXISTS "${TECS_CDL_FILE}")
         message(FATAL_ERROR "asp3_tecs_run_generator: CDL not found: ${TECS_CDL_FILE}")
     endif()
-    #  tecsgen.rb / tecsgen.py のどちらか存在する方を使う（同一ディレクトリ想定）。
+    #  tecsgen.rb / tecsgen.py のどちらか存在する方を使う。
+    #  スクリプトは TECSPATH（tecs/）の親ディレクトリにある。
     #  両方ある場合は .rb を優先（従来互換）。
-    if(EXISTS "${ASP3_TECSGEN_DIR}/tecsgen.rb")
-        set(_tecsgen_script "${ASP3_TECSGEN_DIR}/tecsgen.rb")
+    get_filename_component(_tecsgen_root "${TECSPATH}/.." ABSOLUTE)
+    if(EXISTS "${_tecsgen_root}/tecsgen.rb")
+        set(_tecsgen_script "${_tecsgen_root}/tecsgen.rb")
         find_program(RUBY_EXECUTABLE ruby REQUIRED)
         set(_tecsgen_interpreter "${RUBY_EXECUTABLE}")
-    elseif(EXISTS "${ASP3_TECSGEN_DIR}/tecsgen.py")
-        set(_tecsgen_script "${ASP3_TECSGEN_DIR}/tecsgen.py")
+    elseif(EXISTS "${_tecsgen_root}/tecsgen.py")
+        set(_tecsgen_script "${_tecsgen_root}/tecsgen.py")
         find_program(PYTHON_EXECUTABLE NAMES python3 python REQUIRED)
         set(_tecsgen_interpreter "${PYTHON_EXECUTABLE}")
     else()
         message(FATAL_ERROR
-            "tecsgen.rb / tecsgen.py not found in ${ASP3_TECSGEN_DIR}")
+            "tecsgen.rb / tecsgen.py not found in ${_tecsgen_root}")
     endif()
 
     file(MAKE_DIRECTORY "${TECS_GEN_DIR}")
@@ -149,7 +169,7 @@ function(_asp3_tecs_resolve_source src out_var)
     list(APPEND _search
         "${ASP3_CORE_DIR}"
         "${ASP3_CORE_DIR}/syssvc"
-        "${ASP3_SRCDIR}"
+        "${TECS_BASE_DIR}"
     )
     foreach(_dir ${TECS_INCLUDE_DIRS})
         list(APPEND _search "${_dir}")
@@ -163,7 +183,7 @@ function(_asp3_tecs_resolve_source src out_var)
     endforeach()
 
     # 見つからなくても生成物・後続探索のためパスを返す
-    set(${out_var} "${ASP3_SRCDIR}/${src}" PARENT_SCOPE)
+    set(${out_var} "${TECS_BASE_DIR}/${src}" PARENT_SCOPE)
 endfunction()
 
 function(asp3_tecs_apply_manifest target)

@@ -3,6 +3,7 @@
 ## 概要
 
 TOPPERS/ASP3 COre の STM32 CubeMX 向け環境 をベースに TECS 対応する。
+現時点で、このリポジトリの内容は、実験的なものである。
 
 TODO は、次のとおり。
 
@@ -13,6 +14,12 @@ TODO は、次のとおり。
  デフォルトで TECS 対応版をビルドしますが、ビルドオプションにより非 TECS 対応版に変更することができます。
  なお、TECS 対応版で、実際に動作確認まで行っているのは STM32N6570-DK 環境のみです。
  
+## TECS ジェネレータについて
+
+TECS ジェネレータ (tecsgen) は、tecsgen V1.9.1 に cmake 対応拡張した暫定版と、それを python に書き換えた版が含まれています。
+これらはシンボリックリンクで切り替えるようになっているため、Windows 環境では、期待したようにはビルドできないでしょう。
+
+
 # TOPPERS/ASP3 Core の STM32 CubeMX 向け環境
 
 [TOPPERS/ASP3 Core](https://github.com/toppers/asp3_core)（TECSレス・Python cfg 版 ASP3）を、
@@ -100,6 +107,13 @@ cmake --build build/Debug # → build/Debug/H563ZI.elf
 # 非 TECS（plain-C syssvc）に戻す場合
 cmake --preset Debug -DASP3_ENABLE_TECS=OFF
 cmake --build build/Debug
+```
+
+一つ目の cmake は、以下のように、する必要があるかもしれません。
+
+```bash
+cmake -B build   -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_TOOLCHAIN_FILE=../gcc-arm-none-eabi.cmake   -G "Unix Makefiles" -DASP3_ENABLE_TECS=ON
+cmake --build build/Debug # → build/Debug/H563ZI.elf
 ```
 
 ### 2-b. Visual Studio Code の CMake 拡張機能でビルド

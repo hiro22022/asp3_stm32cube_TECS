@@ -39,9 +39,25 @@ endfunction()
 #
 #  TECS 用パス（外側リポジトリ側。asp3_core は触らない）
 #
-get_filename_component(ASP3_TECSGEN_DIR ${ASP3_STM32_DIR}/../tecsgen ABSOLUTE)
+if(NOT DEFINED TECSPATH)
+    foreach(_tecs_cand
+            ${ASP3_STM32_DIR}/../tecsgen/tecs
+            ${ASP3_STM32_DIR}/../tecsgen-rb/tecs
+            ${ASP3_STM32_DIR}/../tecsgen-py/tecs)
+        get_filename_component(_tecs_cand ${_tecs_cand} ABSOLUTE)
+        if(IS_DIRECTORY ${_tecs_cand})
+            set(TECSPATH ${_tecs_cand})
+            break()
+        endif()
+    endforeach()
+    unset(_tecs_cand)
+    if(NOT TECSPATH)
+        message(FATAL_ERROR
+            "TECSPATH not found (tried tecsgen/tecs, tecsgen-rb/tecs, tecsgen-py/tecs under ${ASP3_STM32_DIR}/..)")
+    endif()
+endif()
 set(ASP3_TECS_KERNEL_DIR ${ASP3_STM32_DIR}/tecs_kernel)
-set(ASP3_SRCDIR ${ASP3_STM32_DIR})
+set(TECS_BASE_DIR ${ASP3_STM32_DIR})
 
 #  tecsgen の -I / import_C 用。CubeMX 生成ヘッダはターゲットで分岐する。
 function(asp3_tecs_setup_paths)

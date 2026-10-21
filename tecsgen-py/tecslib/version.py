@@ -11,4 +11,4 @@
 from tecslib.core import globals as G
 
 G.package = "tecsgen"
-G.version = "1.9.1"
+G.version = "2.A.0"  # Alpha version

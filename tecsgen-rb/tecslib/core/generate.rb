@@ -857,11 +857,11 @@ EOT
     #  Make 変数は is_absolute_path?（先頭 '$'）より先に CMake 変数へ置換する
     path = path.gsub('$(GEN_DIR)/', '${TECS_GEN_DIR}/')
                .gsub('$(GEN_DIR)', '${TECS_GEN_DIR}')
-               .gsub('$(TECSPATH)', '${ASP3_TECSGEN_DIR}/tecs')
+               .gsub('$(TECSPATH)', '${TECSPATH}')
     if path.start_with?('${') then
       path
     elsif TECSGEN.is_absolute_path? path then
-      TECSGEN.subst_tecspath(path).tr('\\', '/')
+      TECSGEN.subst_tecspath(path).tr('\\', '/').gsub('$(TECSPATH)', '${TECSPATH}')
     else
       path
     end
@@ -977,9 +977,9 @@ EOT
       if TECSGEN.is_absolute_path? path then
         cmake_normalize_path(TECSGEN.subst_tecspath(path))
       elsif path == "." then
-        "${ASP3_SRCDIR}"
+        "${TECS_BASE_DIR}"
       else
-        cmake_normalize_path("$(BASE_DIR)/#{path}").gsub('$(BASE_DIR)', '${ASP3_SRCDIR}')
+        cmake_normalize_path("$(BASE_DIR)/#{path}").gsub('$(BASE_DIR)', '${TECS_BASE_DIR}')
       end
     }
     include_dirs << "${TECS_GEN_DIR}"
